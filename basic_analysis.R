@@ -4,7 +4,7 @@ library(utils)
 
 library(readxl)
 
-deaths <- read_excel("COVID-19-geographic-disbtribution-worldwide.xlsx")  # update file name (noting typo!) as necessary
+deaths <- read_excel("GitHub/MR_Project/COVID-19-geographic-disbtribution-worldwide.xlsx")  # update file name (noting typo!) as necessary
 
 # create names and labels for countries
 
@@ -62,7 +62,7 @@ CasesByCountry[i,] <- rounded.moving.average(CasesByCountry[i,], smooth=smooth.t
 
 # # get estimated national populations for 2020 for later comparison of rates 
 
-pops <- read.csv(file="CountryPopulations.csv", header=T)
+pops <- read.csv(file="GitHub/MR_Project/CountryPopulations.csv", header=T)
 CountryPop <- pops[match(CountryId,pops[,1]),3]/10^3
 names(CountryPop) <- CountryNames
 
@@ -110,3 +110,58 @@ plot.Country <- function(country, names=CountryNames, deaths=DeathsByCountry, ca
     points(sub.y, y[sub.y]/pop, cex=0.9)
   }
 }
+
+#exemple avec France
+country<-"France"
+names=CountryNames
+deaths=DeathsByCountry
+cases=CasesByCountry
+pop=CountryPop
+n <- country
+pop1 <- pop[country]
+n.days <- length(deaths[country,])
+y <- deaths[country,]
+m <- cases[country,]
+x <- c(1:n.days)
+
+
+#avec le s, ca fait un bail de smooth mais il y quand même un rapport avec poisson/quasipoisson
+gam(m~s(x),family=poisson(link="log"))
+gam(m~s(x),family=poisson(link="log"))$fit
+gam(m~s(x),family=poisson(link="log"))$smooth#les termes de smooth, rien compris.
+gam(m~s(x),family=poisson(link="log"))$formula #ca veut pas donner les formules rip
+
+plot(gam(m~s(x),family=poisson(link="log")))#apparemment ca fait le plot que quand il y a s(x), intéressant.
+
+
+#je pense que c'est le machin de poisson normale avec summary, coefs et le trucs fitted
+summary(gam(m~x,family=poisson(link="log")))
+gam(m~x,family=poisson(link="log"))$coefficients
+gam(m~x,family=poisson(link="log"))$fit
+
+
+#E(Yt)=m*exp(alpha+beta*t) (attention ici m c'est la population totale, pas la response.)
+#log(Yt)=log(m)+alpha+beta*t+g(t) (g(t) c'est l'éventuel smooth term,alpha intercep et beta c'est le coef de t)
+#Je pense que mon machin en dessous c'est la bonne formule avec l'éventuel smooth term s(x) ou il faut mettre bonne option.
+#On trouve le log(m)(m=population), on le soustrait à intercept et ça donne alpha vu que c'est constant
+gam(m~x+s(x),family=poisson(link = "log"))
+
+
+#Fonction pour premier jour de epidemie, je suis presque sûre qu'on en a besoin pour que le modèle marche.
+first_day_epidemic.case<-function(country){
+  n.days <- length(CasesByCountry[country,])
+  y<-CasesByCountry[country,]
+  n.days <- length(deaths[country,])
+  x <- c(1:n.days)
+  return(min(x[y>0]))
+}
+
+first_day_epidemic.death<-function(country){
+  n.days <- length(DeathsByCountry[country,])
+  y<-DeathsByCountry[country,]
+  n.days <- length(deaths[country,])
+  x <- c(1:n.days)
+  return(min(x[y>0]))
+}
+
+
