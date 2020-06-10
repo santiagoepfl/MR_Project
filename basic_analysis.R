@@ -88,10 +88,10 @@ plot.Country <- function(country, names=CountryNames, deaths=DeathsByCountry, ca
     y <- deaths[country,]
     m <- cases[country,]
     x <- c(1:n.days)
-    plot(m, main=n, xlab="Days since 31 December 2019", ylab="New cases", pch=16, cex=0.9, xlim=c(xmin,n.days), 
-         panel.first = { abline(v=1+cumsum(c(1,31,29,31,30,31,30,31)), col="grey", lwd=1.5);   abline(v=7*c(1:52), col="grey", lty=3) }, ...)
-    lines(fitted(gam(m~s(x), family=quasipoisson(log))), col="red")
-    plot(y, main=n, xlab="Days since 31 December 2019", ylab="Deaths", pch=16, cex=0.9, xlim=c(xmin,n.days), 
+    #plot(m, main=n, xlab="Days since 31 December 2019", ylab="New cases", pch=16, cex=0.9, xlim=c(xmin,n.days),cex.lab=1.4, cex.axis=1.4, cex.main=1.4, cex.sub=1.4, 
+         #panel.first = { abline(v=1+cumsum(c(1,31,29,31,30,31,30,31)), col="grey", lwd=1.5);   abline(v=7*c(1:52), col="grey", lty=3) }, ...)
+    #lines(fitted(gam(m~s(x), family=quasipoisson(log))), col="red")
+    plot(y, main=n, xlab="Days since 31 December 2019", ylab="Deaths", pch=16, cex=0.9, xlim=c(xmin,n.days), cex.lab=1.4, cex.axis=1.4, cex.main=1.4, cex.sub=1.4,
          panel.first = { abline(v=1+cumsum(c(1,31,29,31,30,31,30,31)), col="grey", lwd=1.5);   abline(v=7*c(1:52), col="grey", lty=3) }, ...)
     lines(fitted(gam(y~s(x), family=quasipoisson(log))), col="red")
   }
@@ -109,7 +109,8 @@ plot.Country <- function(country, names=CountryNames, deaths=DeathsByCountry, ca
            abline(h=10^c(-1:4), col="grey") }, ...)
     points(sub.y, y[sub.y]/pop, cex=0.9)
   }
-}
+}#j'ai rajouté cex.lab=1.5 etc pour legend axe.. plus grand.
+#J'ai decidé on bosse que sur les morts donc mis le plot de cases en commentaire
 
 #exemple avec France
 country<-"France"
@@ -164,4 +165,13 @@ first_day_epidemic.death<-function(country){
   return(min(x[y>0]))
 }
 
+#Plots for our basic Exploratory data analysis.
+
+par(mfrow=c(1,2))
+plot.Country("France",plot=TRUE)
+plot.Country("Germany",plot=TRUE)
+
+par(mfrow=c(1,2))
+plot.Country("United_States_of_America",plot=TRUE)
+plot.Country("China",plot=TRUE)
 
