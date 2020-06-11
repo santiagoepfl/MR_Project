@@ -175,3 +175,26 @@ par(mfrow=c(1,2))
 plot.Country("United_States_of_America",plot=TRUE)
 plot.Country("China",plot=TRUE)
 
+#Fitted Splines and slopes
+first_day_china<-first_day_epidemic.death("China")
+Death_china<-DeathsByCountry["China",]
+n.days <- length(Death_china)
+x <- c(1:n.days)
+spline_fit_china<-gam(Death_china[first_day_china:n.days]~s(x[first_day_china:n.days]),family=poisson(link="log"))$fit
+slope_china<-diff(diff(spline_fit_china))#Double derivative to find when slop stops increasing
+slope_china
+#En vrai china c'est chelou ca commence pas vraiment exponentielle, que genre 15 observations.
+
+first_day_germany<-first_day_epidemic.death("Germany")
+Death_germany<-DeathsByCountry["Germany",]
+spline_fit_germany<-gam(Death_germany[first_day_germany:n.days]~s(x[first_day_germany:n.days]),family=poisson(link="log"))$fit
+slope_germany<-diff(diff(spline_fit_germany))#Double derivative to find when slop stops increasing
+slope_germany#Si on s'arrete vraiment au premier truc négatif ca fait seulemnt 9 observations..
+DeathsByCountry["Germany",]#C'est parce que pendant 2 jours il y pas de morts et ensuite ça repart de manière exponentielle pour un petit moment
+#Donc faut choisir les days telles que la double derivé devient négative de manière durable après.
+#Au cas ca commence les days a 70 pour germany c'est pour ca que tu verra que genre 40 observations.
+
+first_day_France<-first_day_epidemic.death("France")
+
+
+first_day_USA<-first_day_epidemic.death("United_States_of_America")
