@@ -43,12 +43,18 @@ first_day_germany<-first_day_epidemic.death("Germany")
 Death_germany<-DeathsByCountry["Germany",]
 n.days<-length(Death_germany)
 x <- c(1:n.days) 
-spline_fit_germany<-gam(Death_germany[1:n.days]~s(x[1:n.days]),family=poisson(link="log"))$fit 
+spline_fit_germany<-gam(Death_germany[first_day_germany:n.days]~s(x[first_day_germany:n.days]),family=poisson(link="log"))$fit
+
 # bon ducoup sa marche plus si on prend la bonne taille
 
 slope_germany<-diff(diff(spline_fit_germany))#Double derivative to find when slop stops increasing
-slope_germany
+slope_germany#around 22 negative values start.
 DeathsByCountry["Germany",]
+
+#first_day_germany+22=92
+germany.gam<-gam(Death_germany[first_day_germany:92]~x[first_day_germany:92],family=poisson(link="log"))
+summary(germany.gam)
+
 
 diff(diff(smooth.spline(x[first_day_germany:n.days],Death_germany[first_day_germany:n.days])$y))
 
