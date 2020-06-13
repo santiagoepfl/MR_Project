@@ -3,9 +3,8 @@ library(httr)
 library(utils)
 
 library(readxl)
-
-deaths <- read_excel("GitHub/MR_Project/COVID-19-geographic-disbtribution-worldwide.xlsx")  # update file name (noting typo!) as necessary
-
+  
+deaths<- read.csv("dataset.csv")[,-1] # ECDC dataset from 13th june
 # create names and labels for countries
 
 CountryNames <- unlist(unique(deaths[,11]),use.names=F)  # in alphabetical order
@@ -14,10 +13,10 @@ CountryId <- match(CountryNames, unlist(deaths[,11],use.names=F))
 # names(CountryPop) <- CountryNames
 
 CountryId <- unlist(deaths[,7],use.names=F)[CountryId]
-CountryId[CountryId=="UK"] <- "GB"      # country for UK is wrong
-CountryId[CountryId=="EL"] <- "GR"      # ditto Greece
-CountryId[CountryId=="PYF"] <- "PF"     # ditto French Polynesia
-CountryId[CountryId=="NA"] <- "NA"      # Namibia is NA !
+#CountryId[CountryId=="UK"] <- "GB"      # country for UK is wrong
+#CountryId[CountryId=="EL"] <- "GR"      # ditto Greece
+#CountryId[CountryId=="PYF"] <- "PF"     # ditto French Polynesia
+#CountryId[CountryId=="NA"] <- "NA"      # Namibia is NA !
 
 # CountryId <- CountryId[CountryId!=c("GE","JE","XK","JPG11668","AN")] 
 
@@ -62,7 +61,7 @@ CasesByCountry[i,] <- rounded.moving.average(CasesByCountry[i,], smooth=smooth.t
 
 # # get estimated national populations for 2020 for later comparison of rates 
 
-pops <- read.csv(file="GitHub/MR_Project/CountryPopulations.csv", header=T)
+pops <- read.csv(file="CountryPopulations.csv", header=T)
 CountryPop <- pops[match(CountryId,pops[,1]),3]/10^3
 names(CountryPop) <- CountryNames
 
@@ -109,92 +108,16 @@ plot.Country <- function(country, names=CountryNames, deaths=DeathsByCountry, ca
            abline(h=10^c(-1:4), col="grey") }, ...)
     points(sub.y, y[sub.y]/pop, cex=0.9)
   }
-}#j'ai rajouté cex.lab=1.5 etc pour legend axe.. plus grand.
-#J'ai decidé on bosse que sur les morts donc mis le plot de cases en commentaire
+}
 
-#exemple avec France
-country<-"France"
-names=CountryNames
-deaths=DeathsByCountry
-cases=CasesByCountry
-pop=CountryPop
-n <- country
-pop1 <- pop[country]
-n.days <- length(deaths[country,])
-y <- deaths[country,]
-m <- cases[country,]
-x <- c(1:n.days)
-
-
-#avec le s, ca fait un bail de smooth mais il y quand même un rapport avec poisson/quasipoisson
-gam(m~s(x),family=poisson(link="log"))
-gam(m~s(x),family=poisson(link="log"))$fit
-gam(m~s(x),family=poisson(link="log"))$smooth#les termes de smooth, rien compris.
-gam(m~s(x),family=poisson(link="log"))$formula #ca veut pas donner les formules rip
-
-plot(gam(m~s(x),family=poisson(link="log")))#apparemment ca fait le plot que quand il y a s(x), intéressant.
-
-
-#je pense que c'est le machin de poisson normale avec summary, coefs et le trucs fitted
-summary(gam(m~x,family=poisson(link="log")))
-gam(m~x,family=poisson(link="log"))$coefficients
-gam(m~x,family=poisson(link="log"))$fit
-
-
-#E(Yt)=m*exp(alpha+beta*t) (attention ici m c'est la population totale, pas la response.)
-#log(Yt)=log(m)+alpha+beta*t+g(t) (g(t) c'est l'éventuel smooth term,alpha intercep et beta c'est le coef de t)
-#Je pense que mon machin en dessous c'est la bonne formule avec l'éventuel smooth term s(x) ou il faut mettre bonne option.
-#On trouve le log(m)(m=population), on le soustrait à intercept et ça donne alpha vu que c'est constant
-gam(m~x+s(x),family=poisson(link = "log"))
-
-
-#Fonction pour premier jour de epidemie, je suis presque sûre qu'on en a besoin pour que le modèle marche.
+#Functions to get the day of the first case in given country
 first_day_epidemic.case<-function(country){
-  n.days <- length(CasesByCountry[country,])
-  y<-CasesByCountry[country,]
-  n.days <- length(deaths[country,])
-  x <- c(1:n.days)
-  return(min(x[y>0]))
+  return(which(CasesByCountry[country,]>0)[1])
 }
 
+#Functions to get the day of the first death in given country
 first_day_epidemic.death<-function(country){
-  n.days <- length(DeathsByCountry[country,])
-  y<-DeathsByCountry[country,]
-  n.days <- length(deaths[country,])
-  x <- c(1:n.days)
-  return(min(x[y>0]))
+  return(which(DeathsByCountry[country,]>0)[1])
 }
 
-#Plots for our basic Exploratory data analysis.
 
-par(mfrow=c(1,2))
-plot.Country("France",plot=TRUE)
-plot.Country("Germany",plot=TRUE)
-
-par(mfrow=c(1,2))
-plot.Country("United_States_of_America",plot=TRUE)
-plot.Country("China",plot=TRUE)
-
-#Fitted Splines and slopes
-first_day_china<-first_day_epidemic.death("China")
-Death_china<-DeathsByCountry["China",]
-n.days <- length(Death_china)
-x <- c(1:n.days)
-spline_fit_china<-gam(Death_china[first_day_china:n.days]~s(x[first_day_china:n.days]),family=poisson(link="log"))$fit
-slope_china<-diff(diff(spline_fit_china))#Double derivative to find when slop stops increasing
-slope_china
-#En vrai china c'est chelou ca commence pas vraiment exponentielle, que genre 15 observations.
-
-first_day_germany<-first_day_epidemic.death("Germany")
-Death_germany<-DeathsByCountry["Germany",]
-spline_fit_germany<-gam(Death_germany[first_day_germany:n.days]~s(x[first_day_germany:n.days]),family=poisson(link="log"))$fit
-slope_germany<-diff(diff(spline_fit_germany))#Double derivative to find when slop stops increasing
-slope_germany#Si on s'arrete vraiment au premier truc négatif ca fait seulemnt 9 observations..
-DeathsByCountry["Germany",]#C'est parce que pendant 2 jours il y pas de morts et ensuite ça repart de manière exponentielle pour un petit moment
-#Donc faut choisir les days telles que la double derivé devient négative de manière durable après.
-#Au cas ca commence les days a 70 pour germany c'est pour ca que tu verra que genre 40 observations.
-
-first_day_France<-first_day_epidemic.death("France")
-
-
-first_day_USA<-first_day_epidemic.death("United_States_of_America")
