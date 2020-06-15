@@ -61,31 +61,46 @@ slope_usa # 38 days initial phase
 
 #################################################
 #Poisson fitting for each country
-germany.gam<-gam(Death_germany[first_day_germany:93]~x[first_day_germany:93],family=poisson(link="log"))
+day_germany<-(x[first_day_germany:93]-first_day_germany)
+#glm c'est mieux pour les plots, ca change rien sinon
+germany.gam<-glm(Death_germany[first_day_germany:93]~day_germany,family=poisson(link="log"))
 summary(germany.gam)
+plot(germany.gam)
 germany.gam$aic
 dispersiontest(germany.gam,trafo=1) #overdispersion test there's no significant overdispersion in germany
 
-
-china.gam<-gam(Death_china[first_day_china:40]~x[first_day_china:40],family = poisson(link="log"))
+day_china<-(x[first_day_china:40]-first_day_china)
+china.gam<-glm(Death_china[first_day_china:40]~day_china,family = poisson(link="log"))
 summary(china.gam) #less variance explained than germany
+plot(china.gam)
 china.gam$aic
 dispersiontest(china.gam,trafo = 1) # there is no significant evidence for overdispersion
 
-france.gam<-gam(Death_france[first_day_france:94]~x[first_day_france:94],family = poisson())
+day_france<-(x[first_day_france:94]-first_day_france)
+france.gam<-glm(Death_france[first_day_france:94]~day_france,family = quasipoisson())
 summary(france.gam)
+plot(france.gam)
 france.gam$aic #really bad aic
 dispersiontest(france.gam,trafo = 1) # there is clearly overdispersion
 france.gam2<-gam(Death_france[first_day_france:94]~x[first_day_france:94],family = quasipoisson())
 summary(france.gam2) #the coefficient are the same but more confidence except the scale parameter
 
-usa.gam<-gam(Death_usa[first_day_usa:100]~x[first_day_usa:100],family = poisson())
+day_usa<-(x[first_day_usa:94]-first_day_usa)
+usa.gam<-gam(Death_usa[first_day_usa:94]~day_usa,family = quasipoisson())
 summary(usa.gam)
+plot(usa.gam)
 usa.gam$aic #auwfull aic
 dispersiontest(usa.gam,trafo=1) #clearly overdispersion
 usa.gam2<-gam(Death_usa[first_day_usa:100]~x[first_day_usa:100],family = quasipoisson())
 summary(usa.gam2) #estimates are also the same
 
+
+#################################################
+#diagnostic plots
+gam.check(germany.gam,old.style=TRUE)
+gam.check(china.gam,old.style=TRUE)
+gam.check(france.gam,old.style=TRUE)
+gam.check(usa.gam,old.style=TRUE)
 
 # Explication Santi le s(x) en gros c'est un smooth term mais le default c'est pas un natural cubic spline
 #c'est un thin plate spline pas trop capté mais c'est un peu different du cours quoi
