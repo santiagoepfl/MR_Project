@@ -62,35 +62,34 @@ slope_usa # 38 days initial phase
 #################################################
 #Poisson fitting for each country
 day_germany<-(x[first_day_germany:93]-first_day_germany)
-#glm c'est mieux pour les plots, ca change rien sinon
-germany.gam<-glm(Death_germany[first_day_germany:93]~day_germany,family=poisson(link="log"))
-summary(germany.gam)
-plot(germany.gam)
+germany.glm<-glm(Death_germany[first_day_germany:93]~day_germany,family=poisson(link="log"))
+summary(germany.glm)
+glm.diag.plots(germany.glm)
 germany.gam$aic
 dispersiontest(germany.gam,trafo=1) #overdispersion test there's no significant overdispersion in germany
 
 day_china<-(x[first_day_china:40]-first_day_china)
-china.gam<-glm(Death_china[first_day_china:40]~day_china,family = poisson(link="log"))
-summary(china.gam) #less variance explained than germany
-plot(china.gam)
+china.glm<-glm(Death_china[first_day_china:40]~day_china,family = poisson(link="log"))
+summary(china.glm) 
+glm.diag.plots(china.glm)
 china.gam$aic
 dispersiontest(china.gam,trafo = 1) # there is no significant evidence for overdispersion
 
-day_france<-(x[first_day_france:94]-first_day_france)
-france.gam<-glm(Death_france[first_day_france:94]~day_france,family = quasipoisson())
-summary(france.gam)
-plot(france.gam)
+day_france<-(x[first_day_france:87]-first_day_france)
+france.glm<-glm(Death_france[first_day_france:87]~day_france,family = poisson())
+summary(france.glm)
+glm.diag.plots(france.glm)
 france.gam$aic #really bad aic
-dispersiontest(france.gam,trafo = 1) # there is clearly overdispersion
+dispersiontest(france.glm,trafo = 1) # there is clearly overdispersion
 france.gam2<-gam(Death_france[first_day_france:94]~x[first_day_france:94],family = quasipoisson())
 summary(france.gam2) #the coefficient are the same but more confidence except the scale parameter
 
-day_usa<-(x[first_day_usa:94]-first_day_usa)
-usa.gam<-gam(Death_usa[first_day_usa:94]~day_usa,family = quasipoisson())
-summary(usa.gam)
-plot(usa.gam)
+day_usa<-(x[first_day_usa:89]-first_day_usa)
+usa.glm<-glm(Death_usa[first_day_usa:89]~day_usa,family = quasipoisson())
+summary(usa.glm)
+glm.diag.plots(usa.glm)
 usa.gam$aic #auwfull aic
-dispersiontest(usa.gam,trafo=1) #clearly overdispersion
+dispersiontest(usa.glm,trafo=1) #clearly overdispersion
 usa.gam2<-gam(Death_usa[first_day_usa:100]~x[first_day_usa:100],family = quasipoisson())
 summary(usa.gam2) #estimates are also the same
 
