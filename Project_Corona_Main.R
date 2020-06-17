@@ -9,6 +9,8 @@ library(mgcv)
 
 library("AER")
 
+library(boot)
+
 source("basic_analysis.R")
 
 set.seed(2)
@@ -67,6 +69,7 @@ summary(germany.glm)
 glm.diag.plots(germany.glm)
 germany.gam$aic
 dispersiontest(germany.gam,trafo=1) #overdispersion test there's no significant overdispersion in germany
+germany.beta<-germany.gam$coefficients[1]-log(CountryPop["Germany"]*1000000)
 
 day_china<-(x[first_day_china:40]-first_day_china)
 china.glm<-glm(Death_china[first_day_china:40]~day_china,family = poisson(link="log"))
@@ -74,15 +77,16 @@ summary(china.glm)
 glm.diag.plots(china.glm)
 china.gam$aic
 dispersiontest(china.gam,trafo = 1) # there is no significant evidence for overdispersion
+china.beta<-china.gam$coefficients[1]-log(CountryPop["China"]*1000000)
 
 day_france<-(x[first_day_france:87]-first_day_france)
-france.glm<-glm(Death_france[first_day_france:87]~day_france,family = poisson())
+france.glm<-glm(Death_france[first_day_france:87]~day_france,family = quasipoisson())
 summary(france.glm)
+par(mfrow=c(1,1))
 glm.diag.plots(france.glm)
 france.gam$aic #really bad aic
 dispersiontest(france.glm,trafo = 1) # there is clearly overdispersion
-france.gam2<-gam(Death_france[first_day_france:94]~x[first_day_france:94],family = quasipoisson())
-summary(france.gam2) #the coefficient are the same but more confidence except the scale parameter
+france.beta<-france.gam$coefficients[1]-log(CountryPop["France"]*1000000)
 
 day_usa<-(x[first_day_usa:89]-first_day_usa)
 usa.glm<-glm(Death_usa[first_day_usa:89]~day_usa,family = quasipoisson())
@@ -90,9 +94,7 @@ summary(usa.glm)
 glm.diag.plots(usa.glm)
 usa.gam$aic #auwfull aic
 dispersiontest(usa.glm,trafo=1) #clearly overdispersion
-usa.gam2<-gam(Death_usa[first_day_usa:100]~x[first_day_usa:100],family = quasipoisson())
-summary(usa.gam2) #estimates are also the same
-
+usa.beta<-usa.gam$coefficients[1]-log(CountryPop["United_States_of_America"]*1000000)
 
 #################################################
 #diagnostic plots
