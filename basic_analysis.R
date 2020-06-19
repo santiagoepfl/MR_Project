@@ -4,7 +4,7 @@ library(utils)
 
 library(readxl)
   
-deaths<- read.csv("dataset.csv")[,-1] # ECDC dataset from 13th june
+deaths<- read.csv("dataset.csv")[,-1] # ECDC dataset freezed from 13th june
 # create names and labels for countries
 
 CountryNames <- unlist(unique(deaths[,11]),use.names=F)  # in alphabetical order
